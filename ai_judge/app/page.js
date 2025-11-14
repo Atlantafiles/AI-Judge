@@ -46,7 +46,7 @@ export default function LandingPage() {
           </p>
           
           <p className="text-lg text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed">
-            Whether you're honing your advocacy skills, preparing for a complex case, or simply 
+            Whether you&apos;re honing your advocacy skills, preparing for a complex case, or simply 
             exploring the intricacies of legal arguments, AI Judge provides an unparalleled learning and 
             testing ground. Submit your arguments as Side A or present your rebuttal as Side B, and let 
             our AI adjudicate.

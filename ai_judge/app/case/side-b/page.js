@@ -365,7 +365,7 @@ export default function SideBSubmission() {
           {/* Response to Side A */}
           <div>
             <label className="block text-sm font-semibold text-slate-900 mb-2">
-              Response to Side A's Claims
+              Response to Side A&apos;s Claims
             </label>
             <textarea
               value={responseToA}

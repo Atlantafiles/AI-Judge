@@ -12,65 +12,65 @@ export default function FinalVerdictPage() {
   const router = useRouter();
 
   useEffect(() => {
-    loadFinalVerdict();
-  }, []);
-
-  const loadFinalVerdict = () => {
-    try {
-      setIsLoading(true);
-      
-      console.log('Loading verdict from sessionStorage...');
-      
-      // verdict from sessionStorage 
-      const storedVerdictData = sessionStorage.getItem('finalVerdict');
-      const storedCaseData = sessionStorage.getItem('caseData');
-      const storedMetadata = sessionStorage.getItem('verdictMetadata');
-      
-      console.log('StoredVerdictData exists:', !!storedVerdictData);
-      console.log('StoredCaseData exists:', !!storedCaseData);
-      console.log('StoredMetadata exists:', !!storedMetadata);
-      
-      if (storedVerdictData) {
-        console.log('Loading verdict from sessionStorage');
-        const parsedVerdict = JSON.parse(storedVerdictData);
-        setVerdict(parsedVerdict);
-        console.log('Verdict loaded:', parsedVerdict);
+    const loadFinalVerdict = () => {
+      try {
+        setIsLoading(true);
         
-        if (storedCaseData) {
-          const parsedCaseData = JSON.parse(storedCaseData);
-          setCaseData(parsedCaseData);
-          console.log('Case data loaded:', parsedCaseData);
-        } else {
-          // Set default case data
-          const defaultCaseData = {
-            caseNumber: "12345",
-            dateFiled: new Date().toISOString(),
-            plaintiff: "Side A",
-            defendant: "Side B"
-          };
-          setCaseData(defaultCaseData);
-          console.log('Using default case data');
-        }
+        console.log('Loading verdict from sessionStorage...');
+        
+        // verdict from sessionStorage 
+        const storedVerdictData = sessionStorage.getItem('finalVerdict');
+        const storedCaseData = sessionStorage.getItem('caseData');
+        const storedMetadata = sessionStorage.getItem('verdictMetadata');
+        
+        console.log('StoredVerdictData exists:', !!storedVerdictData);
+        console.log('StoredCaseData exists:', !!storedCaseData);
+        console.log('StoredMetadata exists:', !!storedMetadata);
+        
+        if (storedVerdictData) {
+          console.log('Loading verdict from sessionStorage');
+          const parsedVerdict = JSON.parse(storedVerdictData);
+          setVerdict(parsedVerdict);
+          console.log('Verdict loaded:', parsedVerdict);
+          
+          if (storedCaseData) {
+            const parsedCaseData = JSON.parse(storedCaseData);
+            setCaseData(parsedCaseData);
+            console.log('Case data loaded:', parsedCaseData);
+          } else {
+            // Set default case data
+            const defaultCaseData = {
+              caseNumber: "12345",
+              dateFiled: new Date().toISOString(),
+              plaintiff: "Side A",
+              defendant: "Side B"
+            };
+            setCaseData(defaultCaseData);
+            console.log('Using default case data');
+          }
 
-        if (storedMetadata) {
-          const parsedMetadata = JSON.parse(storedMetadata);
-          setMetadata(parsedMetadata);
-          console.log('Metadata loaded:', parsedMetadata);
+          if (storedMetadata) {
+            const parsedMetadata = JSON.parse(storedMetadata);
+            setMetadata(parsedMetadata);
+            console.log('Metadata loaded:', parsedMetadata);
+          }
+        } else {
+          console.warn('No verdict found in sessionStorage!');
+          alert('No verdict available. Please complete the trial first.');
+          router.push('/case/arguments');
+          return;
         }
-      } else {
-        console.warn('No verdict found in sessionStorage!');
-        alert('No verdict available. Please complete the trial first.');
+      } catch (error) {
+        console.error('Error loading final verdict:', error);
+        alert('Error loading verdict. Please try again.');
         router.push('/case/arguments');
-        return;
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading final verdict:', error);
-      alert('Error loading verdict. Please try again.');
-      router.push('/case/arguments');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+    
+    loadFinalVerdict();
+  }, [router]);
 
   const handleDownloadVerdict = () => {
     if (!verdict) {
@@ -294,11 +294,11 @@ constitute legal advice.
             <Gavel className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
-            AI Judge's Final Verdict
+            AI Judge&apos;s Final Verdict
           </h1>
           {caseData && (
             <p className="text-slate-600">
-              Case #{caseData.caseNumber} • {new Date(caseData.dateFiled).toLocaleDateString()}
+              Case #{caseData.caseNumber} &bull; {new Date(caseData.dateFiled).toLocaleDateString()}
             </p>
           )}
         </div>

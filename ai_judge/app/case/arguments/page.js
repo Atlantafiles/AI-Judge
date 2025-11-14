@@ -1,10 +1,10 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { Scale, Send, Paperclip, User, Bot, FileText, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function ArgumentsPage() {
+function ArgumentsPageContent() {
   const [caseData, setCaseData] = useState(null);
   const [interimVerdict, setInterimVerdict] = useState(null);
   const [isLoadingVerdict, setIsLoadingVerdict] = useState(true);
@@ -26,69 +26,57 @@ export default function ArgumentsPage() {
   const MAX_ARGUMENTS = 5;
 
   useEffect(() => {
+    const loadCaseAndGenerateVerdict = async () => {
+      try {
+        setIsLoadingVerdict(true);
+        setInterimVerdict(null);
+        
+        const sideADataStr = sessionStorage.getItem('sideAData');
+        const sideBDataStr = sessionStorage.getItem('sideBData');
+        
+        if (!sideADataStr || !sideBDataStr) {
+          alert('Case data not found. Please submit both sides first.');
+          router.push('/');
+          return;
+        }
+        
+        const sideAData = JSON.parse(sideADataStr);
+        const sideBData = JSON.parse(sideBDataStr);
+        
+        const completeCaseData = {
+          sideA: {
+            primaryArgument: sideAData.primaryArgument,
+            detailedEvidence: sideAData.detailedEvidence,
+            responseToOtherSide: sideAData.responseToOtherSide,
+            files: sideAData.files || []
+          },
+          sideB: {
+            primaryArgument: sideBData.primaryArgument,
+            detailedEvidence: sideBData.detailedEvidence,
+            responseToOtherSide: sideBData.responseToOtherSide,
+            files: sideBData.files || []
+          }
+        };
+        
+        setCaseData(completeCaseData);
+    
     // Clear any old session data 
     console.log('Component mounted - clearing old session data');
     // sessionStorage.removeItem('finalVerdict');
     // sessionStorage.removeItem('caseData');
     sessionStorage.removeItem('verdictMetadata');
     
-    loadCaseAndGenerateVerdict();
-  }, []);
+    // GENERATE VERDICT
+    const response = await fetch('/api/verdict/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        caseData: completeCaseData,
+        isInitial: true
+      })
+    });
 
-  useEffect(() => {
-    if (sideAScrollRef.current) {
-      sideAScrollRef.current.scrollTop = sideAScrollRef.current.scrollHeight;
-    }
-    if (sideBScrollRef.current) {
-      sideBScrollRef.current.scrollTop = sideBScrollRef.current.scrollHeight;
-    }
-  }, [sideAMessages, sideBMessages]);
-
-    const loadCaseAndGenerateVerdict = async () => {
-        try {
-            setIsLoadingVerdict(true);
-            setInterimVerdict(null);
-            
-            const sideADataStr = sessionStorage.getItem('sideAData');
-            const sideBDataStr = sessionStorage.getItem('sideBData');
-            
-            if (!sideADataStr || !sideBDataStr) {
-            alert('Case data not found. Please submit both sides first.');
-            router.push('/');
-            return;
-            }
-            
-            const sideAData = JSON.parse(sideADataStr);
-            const sideBData = JSON.parse(sideBDataStr);
-            
-            const completeCaseData = {
-            sideA: {
-                primaryArgument: sideAData.primaryArgument,
-                detailedEvidence: sideAData.detailedEvidence,
-                responseToOtherSide: sideAData.responseToOtherSide,
-                files: sideAData.files || []
-            },
-            sideB: {
-                primaryArgument: sideBData.primaryArgument,
-                detailedEvidence: sideBData.detailedEvidence,
-                responseToOtherSide: sideBData.responseToOtherSide,
-                files: sideBData.files || []
-            }
-            };
-            
-            setCaseData(completeCaseData);
-            
-            // GENERATE VERDICT
-            const response = await fetch('/api/verdict/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                caseData: completeCaseData,
-                isInitial: true
-            })
-            });
-
-            const result = await response.json();
+    const result = await response.json();
             
             if (result.success) {
             setInterimVerdict(result.verdict);
@@ -113,6 +101,19 @@ export default function ArgumentsPage() {
             setIsLoadingVerdict(false);
         }
     };
+    
+    // Call the function
+    loadCaseAndGenerateVerdict();
+  }, [router]);
+
+  useEffect(() => {
+    if (sideAScrollRef.current) {
+      sideAScrollRef.current.scrollTop = sideAScrollRef.current.scrollHeight;
+    }
+    if (sideBScrollRef.current) {
+      sideBScrollRef.current.scrollTop = sideBScrollRef.current.scrollHeight;
+    }
+  }, [sideAMessages, sideBMessages]);
 
   const handleSubmitArgument = async (side) => {
     const input = side === 'A' ? sideAInput : sideBInput;
@@ -605,5 +606,13 @@ export default function ArgumentsPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function ArgumentsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><p>Loading...</p></div>}>
+      <ArgumentsPageContent />
+    </Suspense>
   );
 }

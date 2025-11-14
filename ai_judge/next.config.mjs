@@ -2,6 +2,7 @@
 const nextConfig = {
   /* config options here */
   reactCompiler: true,
+  outputFileTracingRoot: '/ai_judge',
 };
 
 export default nextConfig;
